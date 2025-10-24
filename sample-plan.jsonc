@@ -1,0 +1,8 @@
+{
+  "name": "Sample Plan",
+  "description": "A plan to analyze the project and create a new module.",
+  "steps": [
+    "project analyze",
+    "module create planned-module"
+  ]
+}

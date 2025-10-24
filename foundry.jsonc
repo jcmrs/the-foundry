@@ -11,6 +11,14 @@
     {
       "name": "config-manager",
       "path": "src/modules/config-manager"
+    },
+    {
+      "name": "module-scaffolder",
+      "path": "src/modules/module-scaffolder"
+    },
+    {
+      "name": "task-runner",
+      "path": "src/modules/task-runner"
     }
   ]
 }
