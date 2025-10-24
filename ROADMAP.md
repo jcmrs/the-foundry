@@ -53,5 +53,6 @@ To evolve "The Foundry" from a basic scaffolding framework into a sophisticated,
 *   **Core Specifications:**
     1.  **Command Registration System:** The AI will refactor the Forge to have a formal command registration system, where new commands can be added by creating new files in a specific directory.
     2.  **`forge learn-command` Skill:** The ultimate goal. The AI will gain the ability to create a new command file, implement its logic, and register it with the Forge, making the new command instantly available for future use.
+    2.  **`Manifest:** Creating a Manifest Schema and File and Instructions for other AI's to transform PRD's and other Project Documents into documents suitable and suitably specifified for use wtih the Forge.
 
 ---

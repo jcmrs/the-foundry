@@ -27,6 +27,10 @@
     {
       "name": "memlog",
       "path": "src/modules/memlog"
+    },
+    {
+      "name": "file-manager",
+      "path": "src/modules/file-manager"
     }
   ]
 }
