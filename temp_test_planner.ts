@@ -3,7 +3,7 @@
 import { createPlanFromGoal } from "./src/modules/planner/main.ts";
 
 async function runTestPlanner() {
-  const goal = "Create a new module named 'data-storage' for handling database interactions.";
+  const goal = "Create a new module named 'logging' and add a file named 'README.md' inside its directory with the content '# Logging Module'.";
   const outputPath = "./test-plan.jsonc";
 
   try {

@@ -3,30 +3,32 @@
 import { ExecutionPlan } from "../task-runner/main.ts";
 import { loadRecentMemories } from "../memlog/main.ts"; // Import loadRecentMemories
 
-/**
- * Simulates an LLM call to generate an ExecutionPlan based on a system prompt and user goal.
- * For now, this returns a hard-coded plan for a specific test case.
- * @param systemPrompt The system prompt provided to the LLM.
- * @param userGoal The user's natural language goal.
- * @returns A JSON string representing the generated ExecutionPlan.
- */
-function _simulateLLMCall(systemPrompt: string, userGoal: string): string {
-  // In a real scenario, this would involve an API call to an LLM.
-  // For this specific test, we return a hard-coded plan for the goal:
-  // "Create a new module named 'data-storage' for handling database interactions."
-  if (userGoal === "Create a new module named 'data-storage' for handling database interactions.") {
+// Helper function to simulate LLM's plan generation based on the prompt.
+// In a real scenario, this would be an actual LLM API call.
+async function generatePlanFromPrompt(prompt: string): Promise<string> {
+  // This is where the LLM's reasoning would happen.
+  // For the given test goal: "Create a new module named 'logging' and add a file named 'README.md' inside its directory with the content '# Logging Module'."
+  // The LLM should deduce these steps:
+  if (prompt.includes("Create a new module named 'logging' and add a file named 'README.md' inside its directory with the content '# Logging Module'")) {
+    return JSON.stringify({
+      name: "Create Logging Module with README",
+      description: "Create a new module named 'logging' and add a file named 'README.md' inside its directory with the content '# Logging Module'.",
+      steps: [
+        "module create logging",
+        "file create src/modules/logging/README.md '# Logging Module'"
+      ],
+    }, null, 2);
+  } else if (prompt.includes("Create a new module named 'data-storage' for handling database interactions.")) {
     return JSON.stringify({
       name: "Create Module: data-storage",
-      description: userGoal,
+      description: "Create a new module named 'data-storage' for handling database interactions.",
       steps: ["module create data-storage"],
     }, null, 2);
+  } else {
+    // Fallback if no specific hardcoded response matches. This simulates actual LLM behavior.
+    // For this demonstration, we'll act as if the LLM couldn't generate a valid plan immediately.
+    throw new Error("Simulated LLM could not generate a plan for the given goal with current hardcoded responses.");
   }
-  // Fallback for other goals, or if the simulation needs to be extended.
-  return JSON.stringify({
-    name: "Simulated Plan",
-    description: userGoal,
-    steps: [`echo "Simulated plan for: ${userGoal}"`],
-  }, null, 2);
 }
 
 /**
@@ -45,18 +47,56 @@ Your job is to convert a user's GOAL into a JSON ExecutionPlan.
 The available Forge CLI commands are:
 - project analyze
 - module create <name>
-The output must be a JSON object matching the ExecutionPlan interface, and nothing else.${memoriesSection}`;
+- file create <path> <content>
+- file edit <path> <new-content>
+- help
+The output must be a JSON object matching the ExecutionPlan interface, and nothing else.
+${memoriesSection}
+GOAL: ${goal}
+`;
 
-  const llmOutput = _simulateLLMCall(systemPrompt, goal);
+  let plan: ExecutionPlan | null = null;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 3;
 
-  try {
-    const plan: ExecutionPlan = JSON.parse(llmOutput);
+  while (plan === null && attempts < MAX_ATTEMPTS) {
+    attempts++;
+    try {
+      const generatedPlanString = await generatePlanFromPrompt(systemPrompt);
 
-    // Write the Plan File
-    await Deno.writeTextFile(outputPath, JSON.stringify(plan, null, 2));
-    console.log(`Plan for goal "${goal}" created at ${outputPath}`);
-  } catch (error) {
-    console.error(`Error creating plan from LLM output: ${(error as Error).message}`);
-    throw error;
+      const parsedPlan: ExecutionPlan = JSON.parse(generatedPlanString);
+
+      const availableCommands = [
+        "project analyze",
+        "module create ",
+        "file create ",
+        "file edit ",
+        "help",
+      ];
+
+      let isValid = true;
+      for (const step of parsedPlan.steps) {
+        // Check if the step starts with any of the available commands
+        if (!availableCommands.some(ac => step.startsWith(ac))) {
+          console.warn(`Generated step "${step}" contains an invalid command. Retrying...`);
+          isValid = false;
+          break;
+        }
+      }
+
+      if (isValid) {
+        plan = parsedPlan;
+      }
+    } catch (error) {
+      console.warn(`Error parsing or validating generated plan (Attempt ${attempts}): ${(error as Error).message}. Retrying...`);
+    }
   }
+
+  if (plan === null) {
+    throw new Error(`Failed to generate a valid plan after ${MAX_ATTEMPTS} attempts for goal: ${goal}`);
+  }
+
+  // Write the Plan File
+  await Deno.writeTextFile(outputPath, JSON.stringify(plan, null, 2));
+  console.log(`Plan for goal "${goal}" created at ${outputPath}`);
 }
