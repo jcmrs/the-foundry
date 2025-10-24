@@ -19,6 +19,10 @@
     {
       "name": "task-runner",
       "path": "src/modules/task-runner"
+    },
+    {
+      "name": "planner",
+      "path": "src/modules/planner"
     }
   ]
 }
