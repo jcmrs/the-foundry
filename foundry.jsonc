@@ -1,0 +1,16 @@
+{
+  "name": "The Foundry",
+  "version": "0.1.0",
+  "language": "TypeScript/Deno",
+  "description": "An AI-led development framework for managing and implementing projects with maximum efficiency and autonomy.",
+  "modules": [
+    {
+      "name": "core-engine",
+      "path": "src/modules/core-engine"
+    },
+    {
+      "name": "config-manager",
+      "path": "src/modules/config-manager"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+# Deno
+/deno.lock
+/deno.json
+/deno.jsonc.bak
+
+# Editor configuration
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+build/
+target/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Gemini specific
+.gemini/
