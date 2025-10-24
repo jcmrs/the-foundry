@@ -31,6 +31,10 @@
     {
       "name": "file-manager",
       "path": "src/modules/file-manager"
+    },
+    {
+      "name": "autonomous-agent",
+      "path": "src/modules/autonomous-agent"
     }
   ]
 }

@@ -3,7 +3,8 @@
 import { parseArgs, ParsedCommand } from "./src/modules/command-parser/main.ts";
 import { analyzeProjectStructure } from "./src/modules/analysis-engine/main.ts";
 import { scaffoldModule } from "./src/modules/module-scaffolder/main.ts";
-import { createFile, editFile } from "./src/modules/file-manager/main.ts"; // Import new functions
+import { createFile, editFile } from "./src/modules/file-manager/main.ts";
+import { runGoal } from "./src/modules/autonomous-agent/main.ts"; // Import runGoal
 
 interface CommandEntry {
   command: string;
@@ -80,6 +81,25 @@ const commandRegistry: CommandEntry[] = [
       }
       try {
         await editFile(filePath, newContent);
+      } catch (error) {
+        console.error(`Error: ${(error as Error).message}`);
+        Deno.exit(1);
+      }
+    },
+  },
+  {
+    command: "goal",
+    subcommand: "run",
+    description: "Executes a high-level goal autonomously.",
+    usage: "goal run \"<goal-string>\"",
+    handler: async (parsedCommand: ParsedCommand) => {
+      const goalString = parsedCommand.args.join(" "); // The entire remaining args form the goal string
+      if (!goalString) {
+        console.error("Error: Goal string not provided for 'goal run' command.");
+        Deno.exit(1);
+      }
+      try {
+        await runGoal(goalString);
       } catch (error) {
         console.error(`Error: ${(error as Error).message}`);
         Deno.exit(1);

@@ -13,19 +13,15 @@ export interface ExecutionPlan {
 }
 
 /**
- * Reads a Plan File from disk and executes the sequence of Forge commands defined within it.
- * @param planPath The path to the JSONC Plan File.
+ * Executes a given ExecutionPlan.
+ * @param plan The ExecutionPlan object to execute.
  * @param goal The original natural language goal that led to this plan.
  */
-export async function executePlan(planPath: string, goal: string): Promise<void> {
-  let plan: ExecutionPlan | undefined;
+export async function executePlan(plan: ExecutionPlan, goal: string): Promise<void> {
   let outcome: "SUCCESS" | "FAILURE" = "FAILURE";
   let details: string = "";
 
   try {
-    const planContent = await Deno.readTextFile(planPath);
-    plan = parse(planContent) as ExecutionPlan;
-
     console.log(`Executing plan: ${plan.name} - ${plan.description}`);
 
     for (const step of plan.steps) {
@@ -53,15 +49,13 @@ export async function executePlan(planPath: string, goal: string): Promise<void>
     console.error(details);
     throw error;
   } finally {
-    if (plan) { // Only record memory if plan was successfully parsed
-      const memory: Memory = {
-        timestamp: new Date().toISOString(),
-        goal: goal,
-        plan: plan.steps,
-        outcome: outcome,
-        details: details,
-      };
-      await appendMemory(memory);
-    }
+    const memory: Memory = {
+      timestamp: new Date().toISOString(),
+      goal: goal,
+      plan: plan.steps,
+      outcome: outcome,
+      details: details,
+    };
+    await appendMemory(memory);
   }
 }
