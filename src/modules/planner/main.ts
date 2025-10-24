@@ -34,9 +34,10 @@ async function generatePlanFromPrompt(prompt: string): Promise<string> {
 /**
  * Translates a natural language goal into a machine-executable ExecutionPlan file.
  * @param goal The natural language goal.
- * @param outputPath The path where the ExecutionPlan.jsonc file will be written.
+ * @param outputPath The path where the ExecutionPlan.jsonc file will be written (optional).
+ * @returns The generated ExecutionPlan object.
  */
-export async function createPlanFromGoal(goal: string, outputPath: string): Promise<void> {
+export async function createPlanFromGoal(goal: string, outputPath?: string): Promise<ExecutionPlan> {
   const recentMemories = await loadRecentMemories();
   const memoriesSection = recentMemories.length > 0
     ? `\n## PAST EXPERIENCES (to learn from):\n${JSON.stringify(recentMemories, null, 2)}`
@@ -96,7 +97,11 @@ GOAL: ${goal}
     throw new Error(`Failed to generate a valid plan after ${MAX_ATTEMPTS} attempts for goal: ${goal}`);
   }
 
-  // Write the Plan File
-  await Deno.writeTextFile(outputPath, JSON.stringify(plan, null, 2));
-  console.log(`Plan for goal "${goal}" created at ${outputPath}`);
+  // Conditionally write the Plan File to disk
+  if (outputPath) {
+    await Deno.writeTextFile(outputPath, JSON.stringify(plan, null, 2));
+    console.log(`Plan for goal "${goal}" created at ${outputPath}`);
+  }
+
+  return plan; // Always return the plan object
 }
