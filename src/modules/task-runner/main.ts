@@ -1,5 +1,7 @@
 // src/modules/task-runner/main.ts
 
+import { parse } from "https://deno.land/std@0.208.0/jsonc/mod.ts";
+
 /**
  * Represents a plan file for executing a sequence of Forge commands.
  */
@@ -16,9 +18,7 @@ export interface ExecutionPlan {
 export async function executePlan(planPath: string): Promise<void> {
   try {
     const planContent = await Deno.readTextFile(planPath);
-    // Assuming JSONC can be parsed directly by JSON.parse for now,
-    // as comments are typically stripped by Deno's JSON loader.
-    const plan: ExecutionPlan = JSON.parse(planContent);
+    const plan: ExecutionPlan = parse(planContent) as ExecutionPlan;
 
     console.log(`Executing plan: ${plan.name} - ${plan.description}`);
 
@@ -32,7 +32,8 @@ export async function executePlan(planPath: string): Promise<void> {
         stderr: "inherit",
       });
 
-      const { success } = await command.output();
+      const process = command.spawn();
+      const { success } = await process.status;
 
       if (!success) {
         throw new Error(`Command failed: ${step}`);
