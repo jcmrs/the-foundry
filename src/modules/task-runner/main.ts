@@ -1,6 +1,7 @@
 // src/modules/task-runner/main.ts
 
 import { parse } from "https://deno.land/std@0.208.0/jsonc/mod.ts";
+import { appendMemory, Memory } from "../memlog/main.ts"; // Import appendMemory and Memory
 
 /**
  * Represents a plan file for executing a sequence of Forge commands.
@@ -14,11 +15,16 @@ export interface ExecutionPlan {
 /**
  * Reads a Plan File from disk and executes the sequence of Forge commands defined within it.
  * @param planPath The path to the JSONC Plan File.
+ * @param goal The original natural language goal that led to this plan.
  */
-export async function executePlan(planPath: string): Promise<void> {
+export async function executePlan(planPath: string, goal: string): Promise<void> {
+  let plan: ExecutionPlan | undefined;
+  let outcome: "SUCCESS" | "FAILURE" = "FAILURE";
+  let details: string = "";
+
   try {
     const planContent = await Deno.readTextFile(planPath);
-    const plan: ExecutionPlan = parse(planContent) as ExecutionPlan;
+    plan = parse(planContent) as ExecutionPlan;
 
     console.log(`Executing plan: ${plan.name} - ${plan.description}`);
 
@@ -41,8 +47,21 @@ export async function executePlan(planPath: string): Promise<void> {
       console.log(`--- Step completed: ${step} ---`);
     }
     console.log(`\nPlan '${plan.name}' executed successfully.`);
+    outcome = "SUCCESS";
   } catch (error) {
-    console.error(`Error executing plan: ${(error as Error).message}`);
+    details = `Error executing plan: ${(error as Error).message}`;
+    console.error(details);
     throw error;
+  } finally {
+    if (plan) { // Only record memory if plan was successfully parsed
+      const memory: Memory = {
+        timestamp: new Date().toISOString(),
+        goal: goal,
+        plan: plan.steps,
+        outcome: outcome,
+        details: details,
+      };
+      await appendMemory(memory);
+    }
   }
 }

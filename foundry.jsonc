@@ -23,6 +23,10 @@
     {
       "name": "planner",
       "path": "src/modules/planner"
+    },
+    {
+      "name": "memlog",
+      "path": "src/modules/memlog"
     }
   ]
 }

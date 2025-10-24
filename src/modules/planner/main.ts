@@ -1,6 +1,7 @@
 // src/modules/planner/main.ts
 
 import { ExecutionPlan } from "../task-runner/main.ts";
+import { loadRecentMemories } from "../memlog/main.ts"; // Import loadRecentMemories
 
 /**
  * Simulates an LLM call to generate an ExecutionPlan based on a system prompt and user goal.
@@ -34,12 +35,17 @@ function _simulateLLMCall(systemPrompt: string, userGoal: string): string {
  * @param outputPath The path where the ExecutionPlan.jsonc file will be written.
  */
 export async function createPlanFromGoal(goal: string, outputPath: string): Promise<void> {
+  const recentMemories = await loadRecentMemories();
+  const memoriesSection = recentMemories.length > 0
+    ? `\n## PAST EXPERIENCES (to learn from):\n${JSON.stringify(recentMemories, null, 2)}`
+    : "";
+
   const systemPrompt = `You are an expert AI software architect using The Foundry CLI.
 Your job is to convert a user's GOAL into a JSON ExecutionPlan.
 The available Forge CLI commands are:
 - project analyze
 - module create <name>
-The output must be a JSON object matching the ExecutionPlan interface, and nothing else.`
+The output must be a JSON object matching the ExecutionPlan interface, and nothing else.${memoriesSection}`;
 
   const llmOutput = _simulateLLMCall(systemPrompt, goal);
 
